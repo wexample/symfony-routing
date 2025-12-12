@@ -62,7 +62,10 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 // Fallback to the project templates when the controller does not target a bundle.
                 $templatesRoot = $this->parameterBag->get('kernel.project_dir') . FileHelper::FOLDER_SEPARATOR;
             }
-            $templatesDir = $templatesRoot . $controller::getControllerTemplateDir(bundle: $bundle);
+
+            $templatesDir = $templatesRoot
+                . $controller::getTemplateFrontDir(bundle: $bundle) . FileHelper::FOLDER_SEPARATOR
+                . $controller::getControllerTemplateDir(bundle: $bundle);
 
             // Use Finder to scan template files
             $finder = new Finder();
