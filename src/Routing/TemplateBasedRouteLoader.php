@@ -12,7 +12,7 @@ use Wexample\Helpers\Helper\ClassHelper;
 use Wexample\Helpers\Helper\FileHelper;
 use Wexample\SymfonyRouting\Attribute\TemplateBasedRoutes;
 use Wexample\SymfonyHelpers\Helper\BundleHelper;
-use Wexample\SymfonyHelpers\Helper\TemplateHelper;
+use Wexample\SymfonyTemplate\Helper\TemplateHelper;
 use Wexample\SymfonyHelpers\Routing\AbstractRouteLoader;
 use Wexample\SymfonyHelpers\Routing\Traits\RoutePathBuilderTrait;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
