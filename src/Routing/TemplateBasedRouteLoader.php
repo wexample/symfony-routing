@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Wexample\Helpers\Helper\ClassHelper;
 use Wexample\Helpers\Helper\FileHelper;
-use Wexample\SymfonyRouting\Routing\Attribute\TemplateBasedRoutes;
+use Wexample\SymfonyRouting\Attribute\TemplateBasedRoutes;
 use Wexample\SymfonyHelpers\Helper\BundleHelper;
 use Wexample\SymfonyHelpers\Helper\TemplateHelper;
 use Wexample\SymfonyHelpers\Routing\AbstractRouteLoader;

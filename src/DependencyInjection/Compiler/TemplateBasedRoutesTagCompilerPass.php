@@ -5,7 +5,7 @@ namespace Wexample\SymfonyRouting\DependencyInjection\Compiler;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Wexample\Helpers\Helper\ClassHelper;
-use Wexample\SymfonyRouting\Routing\Attribute\TemplateBasedRoutes;
+use Wexample\SymfonyRouting\Attribute\TemplateBasedRoutes;
 
 class TemplateBasedRoutesTagCompilerPass implements CompilerPassInterface
 {

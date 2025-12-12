@@ -1,6 +1,6 @@
 <?php
 
-namespace Wexample\SymfonyRouting\Routing\Attribute;
+namespace Wexample\SymfonyRouting\Attribute;
 
 use Attribute;
 
