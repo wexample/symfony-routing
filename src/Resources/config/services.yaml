@@ -4,6 +4,10 @@ services:
         autoconfigure: true
         public: false
 
+    Wexample\SymfonyRouting\:
+        resource: '../../{Twig}'
+        tags: ['controller.service_arguments']
+
     Wexample\SymfonyRouting\Routing\TemplateBasedRouteLoader:
         arguments:
             $container: '@service_container'
