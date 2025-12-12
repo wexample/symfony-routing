@@ -1,0 +1,3 @@
+template_routes:
+    resource: .
+    type: template_based_routes

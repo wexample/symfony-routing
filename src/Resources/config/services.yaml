@@ -1,0 +1,13 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Wexample\SymfonyRouting\Routing\TemplateBasedRouteLoader:
+        arguments:
+            $container: '@service_container'
+            $taggedControllers: !tagged_iterator 'has_template_routes'
+            $parameterBag: '@parameter_bag'
+        tags:
+            - { name: 'routing.loader' }
