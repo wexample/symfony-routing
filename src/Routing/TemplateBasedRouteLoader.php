@@ -77,6 +77,11 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 $routeName = $controller::buildRouteName($filename);
                 $fullPath = $this->buildRoutePathFromController($controller, $filename);
 
+                // Skip auto-generation when an explicit Route attribute already defines this route.
+                if ($this->controllerDefinesRoute($reflectionClass, $routeName)) {
+                    continue;
+                }
+
                 if ($fullPath) {
                     // Create the route
                     $route = new Route($fullPath, [
@@ -90,6 +95,28 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         }
 
         return $collection;
+    }
+
+    private function controllerDefinesRoute(\ReflectionClass $reflectionClass, string $routeName): bool
+    {
+        $classRouteAttributes = $reflectionClass->getAttributes(\Symfony\Component\Routing\Annotation\Route::class);
+        $classRouteNamePrefix = $classRouteAttributes
+            ? ($classRouteAttributes[0]->newInstance()->getName() ?? '')
+            : '';
+
+        foreach ($reflectionClass->getMethods() as $method) {
+            foreach ($method->getAttributes(\Symfony\Component\Routing\Annotation\Route::class) as $attribute) {
+                $routeAttribute = $attribute->newInstance();
+                $methodRouteName = $routeAttribute->getName() ?: $method->getName();
+                $computedName = $classRouteNamePrefix ? $classRouteNamePrefix . $methodRouteName : $methodRouteName;
+
+                if ($computedName === $routeName) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     protected function getName(): string
