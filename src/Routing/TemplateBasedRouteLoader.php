@@ -64,7 +64,6 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
             }
 
             $templatesDir = $templatesRoot
-                . $controller::getTemplateFrontDir(bundle: $bundle) . FileHelper::FOLDER_SEPARATOR
                 . $controller::getControllerTemplateDir(bundle: $bundle);
 
             // Use Finder to scan template files
