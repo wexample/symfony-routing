@@ -18,11 +18,11 @@ class TemplateBasedRoutesTagCompilerPass implements CompilerPassInterface
 
             $class = $definition->getClass();
 
-            if (!$class || !class_exists($class)) {
+            if (! $class || ! class_exists($class)) {
                 continue;
             }
 
-            if (!ClassHelper::hasAttributes($class, TemplateBasedRoutes::class)) {
+            if (! ClassHelper::hasAttributes($class, TemplateBasedRoutes::class)) {
                 continue;
             }
 

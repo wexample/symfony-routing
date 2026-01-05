@@ -10,12 +10,12 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Wexample\Helpers\Helper\ClassHelper;
 use Wexample\Helpers\Helper\FileHelper;
-use Wexample\SymfonyRouting\Attribute\TemplateBasedRoutes;
+use Wexample\SymfonyHelpers\Controller\AbstractController;
 use Wexample\SymfonyHelpers\Helper\BundleHelper;
-use Wexample\SymfonyTemplate\Helper\TemplateHelper;
 use Wexample\SymfonyHelpers\Routing\AbstractRouteLoader;
 use Wexample\SymfonyHelpers\Routing\Traits\RoutePathBuilderTrait;
-use Wexample\SymfonyHelpers\Controller\AbstractController;
+use Wexample\SymfonyRouting\Attribute\TemplateBasedRoutes;
+use Wexample\SymfonyTemplate\Helper\TemplateHelper;
 
 class TemplateBasedRouteLoader extends AbstractRouteLoader
 {
@@ -27,21 +27,19 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         protected \Symfony\Component\HttpKernel\KernelInterface $kernel,
         ContainerInterface $container,
         string $env = null
-    )
-    {
+    ) {
         parent::__construct($container, $env);
     }
 
     protected function loadOnce(
         $resource,
         string $type = null
-    ): RouteCollection
-    {
+    ): RouteCollection {
         $collection = new RouteCollection();
 
         /** @var AbstractController $controller */
         foreach ($this->taggedControllers as $controller) {
-            if (!ClassHelper::hasAttributes($controller::class, TemplateBasedRoutes::class)) {
+            if (! ClassHelper::hasAttributes($controller::class, TemplateBasedRoutes::class)) {
                 continue;
             }
 
