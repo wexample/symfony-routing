@@ -1,6 +1,6 @@
 # wexample/symfony-routing
 
-Version: 0.0.6
+Version: 0.0.7
 
 Various helpers for Symfony routing
 
@@ -130,8 +130,8 @@ Refer to each package's documentation for specific version compatibility require
 ## Dependencies
 
 - php: >=8.2
-- wexample/symfony-helpers: 1.0.78
-- wexample/symfony-template: 0.0.4
+- wexample/symfony-helpers: 1.0.79
+- wexample/symfony-template: 0.0.5
 
 
 # About us
