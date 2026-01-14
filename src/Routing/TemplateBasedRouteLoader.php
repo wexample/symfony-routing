@@ -65,19 +65,59 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
             $templatesDir = $templatesRoot
                 . $controller::getControllerTemplateDir(bundle: $bundle);
 
+            $controllerNamespaceParts = TemplateHelper::explodeControllerNamespaceSubParts(
+                controllerName: $controller::class,
+                bundleClassPath: $bundle
+            );
+            if (empty($controllerNamespaceParts) || $controllerNamespaceParts[0] !== 'Pages') {
+                continue;
+            }
+
+            $controllerRouteParts = array_values(array_slice($controllerNamespaceParts, 1));
+
             // Use Finder to scan template files
             $finder = new Finder();
-            $finder->files()->in($templatesDir)->name('*' . TemplateHelper::TEMPLATE_FILE_EXTENSION);
+            $finder
+                ->files()
+                ->in($templatesDir)
+                ->depth('== 0')
+                ->name('*' . TemplateHelper::TEMPLATE_FILE_EXTENSION);
 
             foreach ($finder as $file) {
                 // Extract template name (without extension)
                 $filename = $file->getBasename(TemplateHelper::TEMPLATE_FILE_EXTENSION);
-                $fullPath = $this->buildRoutePathFromController($controller, $filename);
-                if (! $fullPath) {
-                    continue;
+                $relativePath = str_replace('\\', '/', $file->getRelativePath());
+                $relativeParts = $relativePath === '' ? [] : explode('/', $relativePath);
+                $fullRouteParts = [
+                    ...$controllerRouteParts,
+                    ...$relativeParts,
+                ];
+
+                $defaultRouteName = RouteHelper::buildRouteNameFromParts($fullRouteParts, $filename);
+                $defaultRoutePath = RouteHelper::buildRoutePathFromParts($fullRouteParts, $filename);
+
+                $classRouteAttributes = $reflectionClass->getAttributes(RouteAttribute::class);
+                $classRouteAttribute = $classRouteAttributes
+                    ? $classRouteAttributes[0]->newInstance()
+                    : null;
+
+                $classRouteNamePrefix = $classRouteAttribute
+                    ? RouteHelper::getRouteAttributeName($classRouteAttribute)
+                    : null;
+                $classRoutePathBase = $classRouteAttribute
+                    ? RouteHelper::getRouteAttributePath($classRouteAttribute)
+                    : null;
+
+                if (is_array($classRoutePathBase)) {
+                    $classRoutePathBase = $classRoutePathBase ? $classRoutePathBase[0] : null;
                 }
 
-                $routeName = $this->buildRouteNameFromPath($fullPath);
+                $routeName = ($classRouteNamePrefix !== null && $classRouteNamePrefix !== '')
+                    ? $classRouteNamePrefix . RouteHelper::buildRouteNameFromParts($relativeParts, $filename)
+                    : $defaultRouteName;
+                $fullPath = ($classRoutePathBase !== null && $classRoutePathBase !== '')
+                    ? RouteHelper::buildRoutePathFromParts($relativeParts, $filename, $classRoutePathBase)
+                    : $defaultRoutePath;
 
                 // Skip auto-generation when an explicit Route attribute already defines this route.
                 if ($this->controllerDefinesRoute($reflectionClass, $fullPath)) {
@@ -101,7 +141,7 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
     {
         $classRouteAttributes = $reflectionClass->getAttributes(RouteAttribute::class);
         $classRoutePaths = $classRouteAttributes
-            ? ($this->getRouteAttributePath($classRouteAttributes[0]->newInstance()) ?? '')
+            ? (RouteHelper::getRouteAttributePath($classRouteAttributes[0]->newInstance()) ?? '')
             : '';
 
         if ($classRoutePaths === null) {
@@ -113,12 +153,12 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         foreach ($reflectionClass->getMethods() as $method) {
             foreach ($method->getAttributes(RouteAttribute::class) as $attribute) {
                 $routeAttribute = $attribute->newInstance();
-                $methodPaths = $this->getRouteAttributePath($routeAttribute);
+                $methodPaths = RouteHelper::getRouteAttributePath($routeAttribute);
                 if ($methodPaths === null) {
-                    continue;
+                    $methodPaths = [''];
+                } elseif (! is_array($methodPaths)) {
+                    $methodPaths = [$methodPaths];
                 }
-
-                $methodPaths = is_array($methodPaths) ? $methodPaths : [$methodPaths];
                 foreach ($methodPaths as $methodPath) {
                     foreach ($classRoutePaths as $classRoutePath) {
                         $candidatePath = RouteHelper::combineRoutePaths($classRoutePath, $methodPath);
@@ -132,26 +172,6 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
 
         return false;
     }
-
-    private function getRouteAttributePath(object $routeAttribute): array|string|null
-    {
-        if (! property_exists($routeAttribute, 'path')) {
-            return null;
-        }
-
-        try {
-            $property = new \ReflectionProperty($routeAttribute, 'path');
-        } catch (\ReflectionException) {
-            return null;
-        }
-
-        if (! $property->isPublic()) {
-            $property->setAccessible(true);
-        }
-
-        return $property->getValue($routeAttribute);
-    }
-
 
     protected function getName(): string
     {
