@@ -11,6 +11,7 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Wexample\Helpers\Helper\ClassHelper;
 use Wexample\Helpers\Helper\FileHelper;
+use Wexample\SymfonyHelpers\Helper\RouteHelper;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
 use Wexample\SymfonyHelpers\Helper\BundleHelper;
 use Wexample\SymfonyHelpers\Routing\AbstractRouteLoader;
@@ -120,8 +121,8 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 $methodPaths = is_array($methodPaths) ? $methodPaths : [$methodPaths];
                 foreach ($methodPaths as $methodPath) {
                     foreach ($classRoutePaths as $classRoutePath) {
-                        $candidatePath = $this->combineRoutePaths($classRoutePath, $methodPath);
-                        if ($this->normalizeRoutePath($candidatePath) === $this->normalizeRoutePath($fullPath)) {
+                        $candidatePath = RouteHelper::combineRoutePaths($classRoutePath, $methodPath);
+                        if (RouteHelper::normalizeRoutePath($candidatePath) === RouteHelper::normalizeRoutePath($fullPath)) {
                             return true;
                         }
                     }
@@ -149,26 +150,6 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         }
 
         return $property->getValue($routeAttribute);
-    }
-
-    private function normalizeRoutePath(string $path): string
-    {
-        $normalized = '/' . ltrim(trim($path), '/');
-
-        return rtrim($normalized, '/');
-    }
-
-    private function combineRoutePaths(string $basePath, string $path): string
-    {
-        if ($path === '') {
-            return $basePath;
-        }
-
-        if ($basePath === '' || str_starts_with($path, '/')) {
-            return $path;
-        }
-
-        return rtrim($basePath, '/') . '/' . ltrim($path, '/');
     }
 
 
