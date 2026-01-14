@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\Argument\RewindableGenerator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Routing\Attribute\Route as RouteAttribute;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Wexample\Helpers\Helper\ClassHelper;
@@ -79,6 +80,7 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 }
 
                 if ($fullPath) {
+
                     // Create the route
                     $route = new Route($fullPath, [
                         '_controller' => $reflectionClass->getName() . '::resolveSimpleRoute',
@@ -95,15 +97,15 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
 
     private function controllerDefinesRoute(\ReflectionClass $reflectionClass, string $routeName): bool
     {
-        $classRouteAttributes = $reflectionClass->getAttributes(\Symfony\Component\Routing\Annotation\Route::class);
+        $classRouteAttributes = $reflectionClass->getAttributes(RouteAttribute::class);
         $classRouteNamePrefix = $classRouteAttributes
-            ? ($classRouteAttributes[0]->newInstance()->getName() ?? '')
+            ? ($this->getRouteAttributeName($classRouteAttributes[0]->newInstance()) ?? '')
             : '';
 
         foreach ($reflectionClass->getMethods() as $method) {
-            foreach ($method->getAttributes(\Symfony\Component\Routing\Annotation\Route::class) as $attribute) {
+            foreach ($method->getAttributes(RouteAttribute::class) as $attribute) {
                 $routeAttribute = $attribute->newInstance();
-                $methodRouteName = $routeAttribute->getName() ?: $method->getName();
+                $methodRouteName = $this->getRouteAttributeName($routeAttribute) ?: $method->getName();
                 $computedName = $classRouteNamePrefix ? $classRouteNamePrefix . $methodRouteName : $methodRouteName;
 
                 if ($computedName === $routeName) {
@@ -113,6 +115,25 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         }
 
         return false;
+    }
+
+    private function getRouteAttributeName(object $routeAttribute): ?string
+    {
+        if (! property_exists($routeAttribute, 'name')) {
+            return null;
+        }
+
+        try {
+            $property = new \ReflectionProperty($routeAttribute, 'name');
+        } catch (\ReflectionException) {
+            return null;
+        }
+
+        if (! $property->isPublic()) {
+            $property->setAccessible(true);
+        }
+
+        return $property->getValue($routeAttribute);
     }
 
 
