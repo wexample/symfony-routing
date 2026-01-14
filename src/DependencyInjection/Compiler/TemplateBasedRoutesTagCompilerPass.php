@@ -22,7 +22,7 @@ class TemplateBasedRoutesTagCompilerPass implements CompilerPassInterface
                 continue;
             }
 
-            if (! ClassHelper::hasAttributes($class, TemplateBasedRoutes::class)) {
+            if (! ClassHelper::hasAttributesInHierarchy($class, TemplateBasedRoutes::class)) {
                 continue;
             }
 

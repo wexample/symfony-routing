@@ -36,10 +36,9 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         string $type = null
     ): RouteCollection {
         $collection = new RouteCollection();
-
         /** @var AbstractController $controller */
         foreach ($this->taggedControllers as $controller) {
-            if (! ClassHelper::hasAttributes($controller::class, TemplateBasedRoutes::class)) {
+            if (! ClassHelper::hasAttributesInHierarchy($controller::class, TemplateBasedRoutes::class)) {
                 continue;
             }
 
@@ -115,6 +114,7 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
 
         return false;
     }
+
 
     protected function getName(): string
     {
