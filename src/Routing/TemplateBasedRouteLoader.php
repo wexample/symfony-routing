@@ -71,45 +71,60 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
             foreach ($finder as $file) {
                 // Extract template name (without extension)
                 $filename = $file->getBasename(TemplateHelper::TEMPLATE_FILE_EXTENSION);
-                $routeName = $controller::buildRouteName($filename);
                 $fullPath = $this->buildRoutePathFromController($controller, $filename);
-
-                // Skip auto-generation when an explicit Route attribute already defines this route.
-                if ($this->controllerDefinesRoute($reflectionClass, $routeName)) {
+                if (! $fullPath) {
                     continue;
                 }
 
-                if ($fullPath) {
+                $routeName = $this->buildRouteNameFromPath($fullPath);
 
-                    // Create the route
-                    $route = new Route($fullPath, [
-                        '_controller' => $reflectionClass->getName() . '::resolveSimpleRoute',
-                        'routeName' => $filename,
-                    ]);
-
-                    $collection->add($routeName, $route);
+                // Skip auto-generation when an explicit Route attribute already defines this route.
+                if ($this->controllerDefinesRoute($reflectionClass, $fullPath)) {
+                    continue;
                 }
+
+                // Create the route
+                $route = new Route($fullPath, [
+                    '_controller' => $reflectionClass->getName() . '::resolveSimpleRoute',
+                    'routeName' => $filename,
+                ]);
+
+                $collection->add($routeName, $route);
             }
         }
 
         return $collection;
     }
 
-    private function controllerDefinesRoute(\ReflectionClass $reflectionClass, string $routeName): bool
+    private function controllerDefinesRoute(\ReflectionClass $reflectionClass, string $fullPath): bool
     {
         $classRouteAttributes = $reflectionClass->getAttributes(RouteAttribute::class);
-        $classRouteNamePrefix = $classRouteAttributes
-            ? ($this->getRouteAttributeName($classRouteAttributes[0]->newInstance()) ?? '')
+        $classRoutePaths = $classRouteAttributes
+            ? ($this->getRouteAttributePath($classRouteAttributes[0]->newInstance()) ?? '')
             : '';
+
+        if ($classRoutePaths === null) {
+            $classRoutePaths = [''];
+        } elseif (! is_array($classRoutePaths)) {
+            $classRoutePaths = [$classRoutePaths];
+        }
 
         foreach ($reflectionClass->getMethods() as $method) {
             foreach ($method->getAttributes(RouteAttribute::class) as $attribute) {
                 $routeAttribute = $attribute->newInstance();
-                $methodRouteName = $this->getRouteAttributeName($routeAttribute) ?: $method->getName();
-                $computedName = $classRouteNamePrefix ? $classRouteNamePrefix . $methodRouteName : $methodRouteName;
+                $methodPaths = $this->getRouteAttributePath($routeAttribute);
+                if ($methodPaths === null) {
+                    continue;
+                }
 
-                if ($computedName === $routeName) {
-                    return true;
+                $methodPaths = is_array($methodPaths) ? $methodPaths : [$methodPaths];
+                foreach ($methodPaths as $methodPath) {
+                    foreach ($classRoutePaths as $classRoutePath) {
+                        $candidatePath = $this->combineRoutePaths($classRoutePath, $methodPath);
+                        if ($this->normalizeRoutePath($candidatePath) === $this->normalizeRoutePath($fullPath)) {
+                            return true;
+                        }
+                    }
                 }
             }
         }
@@ -117,14 +132,14 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         return false;
     }
 
-    private function getRouteAttributeName(object $routeAttribute): ?string
+    private function getRouteAttributePath(object $routeAttribute): array|string|null
     {
-        if (! property_exists($routeAttribute, 'name')) {
+        if (! property_exists($routeAttribute, 'path')) {
             return null;
         }
 
         try {
-            $property = new \ReflectionProperty($routeAttribute, 'name');
+            $property = new \ReflectionProperty($routeAttribute, 'path');
         } catch (\ReflectionException) {
             return null;
         }
@@ -134,6 +149,26 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         }
 
         return $property->getValue($routeAttribute);
+    }
+
+    private function normalizeRoutePath(string $path): string
+    {
+        $normalized = '/' . ltrim(trim($path), '/');
+
+        return rtrim($normalized, '/');
+    }
+
+    private function combineRoutePaths(string $basePath, string $path): string
+    {
+        if ($path === '') {
+            return $basePath;
+        }
+
+        if ($basePath === '' || str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        return rtrim($basePath, '/') . '/' . ltrim($path, '/');
     }
 
 
