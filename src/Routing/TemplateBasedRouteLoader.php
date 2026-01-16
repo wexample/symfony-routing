@@ -69,11 +69,15 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 controllerName: $controller::class,
                 bundleClassPath: $bundle
             );
-            if (empty($controllerNamespaceParts) || $controllerNamespaceParts[0] !== 'Pages') {
+            if (empty($controllerNamespaceParts)) {
                 continue;
             }
 
-            $controllerRouteParts = array_values(array_slice($controllerNamespaceParts, 1));
+            if ($controllerNamespaceParts[0] === 'Pages') {
+                $controllerRouteParts = array_values(array_slice($controllerNamespaceParts, 1));
+            } else {
+                $controllerRouteParts = array_values($controllerNamespaceParts);
+            }
 
             // Use Finder to scan template files
             $finder = new Finder();
