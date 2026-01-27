@@ -3,7 +3,7 @@
   "description": "Various helpers for Symfony routing",
   "type": "library",
   "license": "MIT",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyRouting\\": "src/"
@@ -17,7 +17,7 @@
   ],
   "require": {
     "php": ">=8.2",
-    "wexample/symfony-helpers": "1.0.86",
-    "wexample/symfony-template": "0.0.12"
+    "wexample/symfony-helpers": "1.0.87",
+    "wexample/symfony-template": "0.0.13"
   }
 }
