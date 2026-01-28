@@ -1,23 +1,23 @@
 {
-    "name": "wexample/symfony-routing",
-    "description": "Various helpers for Symfony routing",
-    "type": "library",
-    "license": "MIT",
-    "version": "0.0.16",
-    "autoload": {
-        "psr-4": {
-            "Wexample\\SymfonyRouting\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "weeger",
-            "email": "romain.weeger@wexample.com"
-        }
-    ],
-    "require": {
-        "php": ">=8.2",
-        "wexample/symfony-helpers": "*",
-        "wexample/symfony-template": "*"
+  "name": "wexample/symfony-routing",
+  "description": "Various helpers for Symfony routing",
+  "type": "library",
+  "license": "MIT",
+  "version": "0.0.17",
+  "autoload": {
+    "psr-4": {
+      "Wexample\\SymfonyRouting\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "weeger",
+      "email": "romain.weeger@wexample.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.2",
+    "wexample/symfony-helpers": "1.0.89",
+    "wexample/symfony-template": "0.0.15"
+  }
 }
