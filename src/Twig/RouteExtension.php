@@ -12,12 +12,14 @@ use Wexample\SymfonyHelpers\Twig\AbstractExtension;
 class RouteExtension extends AbstractExtension
 {
     protected ?string $currentPath = null;
+    protected ?RequestStack $requestStack = null;
 
     public function __construct(
         RequestStack $requestStack,
         public UrlGeneratorInterface $urlGenerator,
         private RouterInterface $router
     ) {
+        $this->requestStack = $requestStack;
         $request = $requestStack->getCurrentRequest();
 
         if ($request) {
@@ -31,6 +33,10 @@ class RouteExtension extends AbstractExtension
             new TwigFunction(
                 'route_is_current',
                 [$this, 'routeIsCurrent']
+            ),
+            new TwigFunction(
+                'route_current',
+                [$this, 'routeCurrent']
             ),
             new TwigFunction(
                 'route_get_controller_routes',
@@ -49,6 +55,11 @@ class RouteExtension extends AbstractExtension
             $route,
             $params ?: []
         ) === $this->currentPath ? $returnValueIfSuccess : $returnValueIfFail;
+    }
+
+    public function routeCurrent(): ?string
+    {
+        return $this->requestStack?->getCurrentRequest()?->attributes->get('_route');
     }
 
     /**
