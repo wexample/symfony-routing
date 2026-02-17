@@ -18,7 +18,8 @@ class RouteExtension extends AbstractExtension
         RequestStack $requestStack,
         public UrlGeneratorInterface $urlGenerator,
         private RouterInterface $router
-    ) {
+    )
+    {
         $this->requestStack = $requestStack;
         $request = $requestStack->getCurrentRequest();
 
@@ -33,6 +34,10 @@ class RouteExtension extends AbstractExtension
             new TwigFunction(
                 'route_is_current',
                 [$this, 'routeIsCurrent']
+            ),
+            new TwigFunction(
+                'route_is_current_or_related',
+                [$this, 'routeIsCurrentOrRelated']
             ),
             new TwigFunction(
                 'route_current',
@@ -50,7 +55,8 @@ class RouteExtension extends AbstractExtension
         ?array $params = null,
         mixed $returnValueIfSuccess = true,
         mixed $returnValueIfFail = false,
-    ): mixed {
+    ): mixed
+    {
         return $this->urlGenerator->generate(
             $route,
             $params ?: []
@@ -60,6 +66,49 @@ class RouteExtension extends AbstractExtension
     public function routeCurrent(): ?string
     {
         return $this->requestStack?->getCurrentRequest()?->attributes->get('_route');
+    }
+
+    public function routeIsCurrentOrRelated(
+        string $route,
+        ?array $params = null,
+        mixed $returnValueIfSuccess = true,
+        mixed $returnValueIfFail = false,
+    ): mixed
+    {
+        if ($this->routeIsCurrent($route, $params, true, false) === true) {
+            return $returnValueIfSuccess;
+        }
+
+        $request = $this->requestStack?->getCurrentRequest();
+        if (!$request) {
+            return $returnValueIfFail;
+        }
+
+        $currentRoute = $request->attributes->get('_route');
+        if (is_string($currentRoute) && $this->isRouteInSameSection($route, $currentRoute)) {
+            return $returnValueIfSuccess;
+        }
+
+        $stack = $request->attributes->get('_breadcrumb_stack', []);
+        if (!is_array($stack)) {
+            return $returnValueIfFail;
+        }
+
+        foreach ($stack as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            if (($item['route'] ?? null) !== $route) {
+                continue;
+            }
+
+            if ($this->routeParamsMatch($params ?? [], $item['params'] ?? [])) {
+                return $returnValueIfSuccess;
+            }
+        }
+
+        return $returnValueIfFail;
     }
 
     /**
@@ -74,5 +123,43 @@ class RouteExtension extends AbstractExtension
             $this->router->getRouteCollection(),
             $controllerClass
         );
+    }
+
+    private function isRouteInSameSection(
+        string $parentRoute,
+        string $currentRoute
+    ): bool
+    {
+        if ($parentRoute === $currentRoute) {
+            return true;
+        }
+
+        if (!str_ends_with($parentRoute, '_index')) {
+            return false;
+        }
+
+        $prefix = substr($parentRoute, 0, -strlen('_index')) . '_';
+
+        return str_starts_with($currentRoute, $prefix);
+    }
+
+    private function routeParamsMatch(
+        array $expectedParams,
+        mixed $actualParams
+    ): bool
+    {
+        $actual = is_array($actualParams) ? $actualParams : [];
+
+        foreach ($expectedParams as $key => $value) {
+            if (!array_key_exists($key, $actual)) {
+                return false;
+            }
+
+            if ((string) $actual[$key] !== (string) $value) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
