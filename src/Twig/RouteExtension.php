@@ -18,8 +18,7 @@ class RouteExtension extends AbstractExtension
         RequestStack $requestStack,
         public UrlGeneratorInterface $urlGenerator,
         private RouterInterface $router
-    )
-    {
+    ) {
         $this->requestStack = $requestStack;
         $request = $requestStack->getCurrentRequest();
 
@@ -55,8 +54,7 @@ class RouteExtension extends AbstractExtension
         ?array $params = null,
         mixed $returnValueIfSuccess = true,
         mixed $returnValueIfFail = false,
-    ): mixed
-    {
+    ): mixed {
         return $this->urlGenerator->generate(
             $route,
             $params ?: []
@@ -73,14 +71,13 @@ class RouteExtension extends AbstractExtension
         ?array $params = null,
         mixed $returnValueIfSuccess = true,
         mixed $returnValueIfFail = false,
-    ): mixed
-    {
+    ): mixed {
         if ($this->routeIsCurrent($route, $params, true, false) === true) {
             return $returnValueIfSuccess;
         }
 
         $request = $this->requestStack?->getCurrentRequest();
-        if (!$request) {
+        if (! $request) {
             return $returnValueIfFail;
         }
 
@@ -90,12 +87,12 @@ class RouteExtension extends AbstractExtension
         }
 
         $stack = $request->attributes->get('_breadcrumb_stack', []);
-        if (!is_array($stack)) {
+        if (! is_array($stack)) {
             return $returnValueIfFail;
         }
 
         foreach ($stack as $item) {
-            if (!is_array($item)) {
+            if (! is_array($item)) {
                 continue;
             }
 
@@ -128,13 +125,12 @@ class RouteExtension extends AbstractExtension
     private function isRouteInSameSection(
         string $parentRoute,
         string $currentRoute
-    ): bool
-    {
+    ): bool {
         if ($parentRoute === $currentRoute) {
             return true;
         }
 
-        if (!str_ends_with($parentRoute, '_index')) {
+        if (! str_ends_with($parentRoute, '_index')) {
             return false;
         }
 
@@ -146,12 +142,11 @@ class RouteExtension extends AbstractExtension
     private function routeParamsMatch(
         array $expectedParams,
         mixed $actualParams
-    ): bool
-    {
+    ): bool {
         $actual = is_array($actualParams) ? $actualParams : [];
 
         foreach ($expectedParams as $key => $value) {
-            if (!array_key_exists($key, $actual)) {
+            if (! array_key_exists($key, $actual)) {
                 return false;
             }
 
