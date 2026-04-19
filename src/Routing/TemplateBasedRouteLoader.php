@@ -62,9 +62,6 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 $templatesRoot = $this->parameterBag->get('kernel.project_dir') . FileHelper::FOLDER_SEPARATOR;
             }
 
-            $templatesDir = $templatesRoot
-                . $controller::getControllerTemplateDir(bundle: $bundle);
-
             $controllerNamespaceParts = TemplateHelper::explodeControllerNamespaceSubParts(
                 controllerName: $controller::class,
                 bundleClassPath: $bundle
@@ -72,6 +69,12 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
             if (empty($controllerNamespaceParts)) {
                 continue;
             }
+
+            // Use getTemplateFrontDir() (filesystem prefix: 'assets' for bundles, 'front' for app)
+            // rather than getControllerTemplateDir() which returns the Twig alias prefix.
+            $templatesDir = $templatesRoot . TemplateHelper::joinNormalizedParts(
+                [$controller::getTemplateFrontDir(bundle: $bundle), ...$controllerNamespaceParts]
+            );
 
             if ($controllerNamespaceParts[0] === 'Pages') {
                 $controllerRouteParts = array_values(array_slice($controllerNamespaceParts, 1));
