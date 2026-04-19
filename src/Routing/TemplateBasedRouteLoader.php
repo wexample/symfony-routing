@@ -82,6 +82,10 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 $controllerRouteParts = array_values($controllerNamespaceParts);
             }
 
+            if (!is_dir($templatesDir)) {
+                continue;
+            }
+
             // Use Finder to scan template files
             $finder = new Finder();
             $finder
