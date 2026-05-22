@@ -4,4 +4,8 @@ domains: []
 global:
   name: symfony_routing
   type: app
-  version: 6.0.19
+  version: 0.0.21
+wex:
+  version: 6.0.89
+git:
+  publication_strategy: main_push
