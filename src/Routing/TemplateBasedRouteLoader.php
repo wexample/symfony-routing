@@ -82,7 +82,7 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 $controllerRouteParts = array_values($controllerNamespaceParts);
             }
 
-            if (!is_dir($templatesDir)) {
+            if (! is_dir($templatesDir)) {
                 continue;
             }
 
