@@ -1,6 +1,6 @@
 # symfony_routing
 
-Version: 0.1.3
+Version: 0.1.4
 
 Various helpers for Symfony routing
 
