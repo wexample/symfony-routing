@@ -1,6 +1,6 @@
 # symfony_routing
 
-Version: 0.1.6
+Version: 0.1.7
 
 Various helpers for Symfony routing
 
@@ -29,7 +29,7 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 ## Dependencies
 
 - php: >=8.2
-- wexample/symfony-helpers: >=3.0.0
+- wexample/symfony-helpers: >=4.0.0
 - wexample/symfony-template: >=0.0.25
 
 ## Versioning & Compatibility Policy
