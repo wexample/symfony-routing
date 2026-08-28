@@ -1,19 +1,3 @@
-# symfony_routing
-
-Version: 0.1.8
-
-`wexample/symfony-routing` is a Symfony bundle that turns Twig templates into routes: a controller carrying the `#[TemplateBasedRoutes]` attribute gets one route per template file found in its template directory, each wired to `resolveSimpleRoute`, so publishing a page means dropping a `.html.twig` file rather than declaring a route. It also ships a Twig extension exposing `route_is_current`, `route_is_current_or_related`, `route_current` and `route_get_controller_routes`, the functions a template needs to know where the visitor currently stands. It addresses Symfony applications already built on the Wexample suite: the loader leans on the controller and template conventions of `wexample/symfony-helpers` and `wexample/symfony-template`, both required.
-
-## Table of Contents
-
-- [Architecture](#architecture)
-- [Integration in the Suite](#integration-in-the-suite)
-- [Dependencies](#dependencies)
-- [Versioning & Compatibility Policy](#versioning--compatibility-policy)
-- [License](#license)
-- [About us](#about-us)
-- [Migration Notes](#migration-notes)
-
 ## Architecture
 
 The bundle is small — six PHP classes and two YAML files — and does two unrelated things: it generates routes from Twig template files at container-compilation/routing time, and it exposes four Twig functions about the current route. Only the first has moving parts.
@@ -82,49 +66,3 @@ Note when editing step 5: because the Finder is capped at `depth('== 0')`, `$fil
 Almost every helper used here lives outside the package: `AbstractRouteLoader`, `AbstractBundle`, `AbstractExtension`, `AbstractWexampleSymfonyExtension`, `RouteHelper`, `BundleHelper`, `RoutePathBuilderTrait` and `resolveSimpleRoute` in `wexample/symfony-helpers`; `TemplateHelper` in `wexample/symfony-template`; `ClassHelper` and `FileHelper` reached through them. The package owns the attribute, the compiler pass, the scanning loop and the Twig functions — nothing else. Changing route naming or path conventions means changing `RouteHelper` in symfony-helpers, not this repository.
 
 Nothing here is executed by this package alone either: the routes appear only once a host application declares an import of `type: template_based_routes` in its own routing configuration, and `RoutePathBuilderTrait` is used for its typing/inheritance even though `loadOnce()` calls the `RouteHelper` static builders directly rather than the trait's `buildRoutePathFromController()`.
-
-## Integration in the Suite
-
-This package is part of the Wexample Suite — a collection of high-quality, modular tools designed to work seamlessly together across multiple languages and environments.
-
-### Related Packages
-
-The suite includes packages for configuration management, file handling, prompts, and more. Each package can be used independently or as part of the integrated suite.
-
-Visit the [Wexample Suite documentation](https://docs.wexample.com) for the complete package ecosystem.
-
-## Dependencies
-
-- php: >=8.2
-- wexample/symfony-helpers: >=5.0.0
-- wexample/symfony-template: >=0.0.25
-
-## Versioning & Compatibility Policy
-
-Wexample packages follow **Semantic Versioning** (SemVer):
-
-- **MAJOR**: Breaking changes
-- **MINOR**: New features, backward compatible
-- **PATCH**: Bug fixes, backward compatible
-
-We maintain backward compatibility within major versions and provide clear migration guides for breaking changes.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-Free to use in both personal and commercial projects.
-
-## About us
-
-[Wexample](https://wexample.com) stands as a cornerstone of the digital ecosystem — a collective of seasoned engineers, researchers, and creators driven by a relentless pursuit of technological excellence. More than a media platform, it has grown into a vibrant community where innovation meets craftsmanship, and where every line of code reflects a commitment to clarity, durability, and shared intelligence.
-
-This packages suite embodies this spirit. Trusted by professionals and enthusiasts alike, it delivers a consistent, high-quality foundation for modern development — open, elegant, and battle-tested. Its reputation is built on years of collaboration, refinement, and rigorous attention to detail, making it a natural choice for those who demand both robustness and beauty in their tools.
-
-Wexample cultivates a culture of mastery. Each package, each contribution carries the mark of a community that values precision, ethics, and innovation — a community proud to shape the future of digital craftsmanship.
-
-## Migration Notes
-
-When upgrading between major versions, refer to the migration guides in the documentation.
-
-Breaking changes are clearly documented with upgrade paths and examples.
