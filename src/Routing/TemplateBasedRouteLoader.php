@@ -82,6 +82,14 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 $controllerRouteParts = array_values($controllerNamespaceParts);
             }
 
+            // The namespace parts above start after the bundle, which the URL keeps in
+            // its own segment and the assets keep in their alias. A route name has
+            // neither: it lands in the one namespace every bundle of the app shares, so
+            // it takes the vendor and the bundle back as its head.
+            $bundleRouteParts = $bundle
+                ? explode('/', BundleHelper::getBundlePackageNameFromClassName($bundle))
+                : [];
+
             if (! is_dir($templatesDir)) {
                 continue;
             }
@@ -104,7 +112,10 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                     ...$relativeParts,
                 ];
 
-                $defaultRouteName = RouteHelper::buildRouteNameFromParts($fullRouteParts, $filename);
+                $defaultRouteName = RouteHelper::buildRouteNameFromParts(
+                    [...$bundleRouteParts, ...$fullRouteParts],
+                    $filename
+                );
                 $defaultRoutePath = RouteHelper::buildRoutePathFromParts($fullRouteParts, $filename);
 
                 $classRouteAttributes = $reflectionClass->getAttributes(RouteAttribute::class);

@@ -1,6 +1,6 @@
 # symfony_routing
 
-Version: 0.1.8
+Version: 1.0.0
 
 `wexample/symfony-routing` is a Symfony bundle that turns Twig templates into routes: a controller carrying the `#[TemplateBasedRoutes]` attribute gets one route per template file found in its template directory, each wired to `resolveSimpleRoute`, so publishing a page means dropping a `.html.twig` file rather than declaring a route. It also ships a Twig extension exposing `route_is_current`, `route_is_current_or_related`, `route_current` and `route_get_controller_routes`, the functions a template needs to know where the visitor currently stands. It addresses Symfony applications already built on the Wexample suite: the loader leans on the controller and template conventions of `wexample/symfony-helpers` and `wexample/symfony-template`, both required.
 
