@@ -16,8 +16,13 @@
     }
   ],
   "require": {
-    "php": ">=8.2",
+    "php": ">=8.5",
     "wexample/symfony-helpers": ">=7.0.0",
     "wexample/symfony-template": ">=0.0.25"
+  },
+  "extra": {
+    "install": {
+      "bundle_env": "all"
+    }
   }
 }
