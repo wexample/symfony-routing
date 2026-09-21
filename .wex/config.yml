@@ -6,7 +6,7 @@ git:
 global:
   name: symfony_routing
   type: app
-  version: 1.0.3
+  version: 1.0.4
 wex:
   migration: 5
   version: 6.0.136
