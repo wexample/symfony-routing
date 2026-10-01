@@ -28,14 +28,14 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         protected ParameterBagInterface $parameterBag,
         protected \Symfony\Component\HttpKernel\KernelInterface $kernel,
         ContainerInterface $container,
-        string $env = null
+        ?string $env = null
     ) {
         parent::__construct($container, $env);
     }
 
     protected function loadOnce(
         $resource,
-        string $type = null
+        ?string $type = null
     ): RouteCollection {
         $collection = new RouteCollection();
         /** @var AbstractController $controller */
