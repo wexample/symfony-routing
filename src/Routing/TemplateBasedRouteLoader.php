@@ -100,7 +100,10 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 ->files()
                 ->in($templatesDir)
                 ->depth('== 0')
-                ->name('*' . TemplateHelper::TEMPLATE_FILE_EXTENSION);
+                ->name('*' . TemplateHelper::TEMPLATE_FILE_EXTENSION)
+                // A template named with a leading underscore is a partial,
+                // included by the pages beside it and never a page itself.
+                ->notName('_*');
 
             foreach ($finder as $file) {
                 // Extract template name (without extension)
