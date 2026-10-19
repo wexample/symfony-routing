@@ -17,12 +17,12 @@ class RouteExtension extends AbstractExtension
         get => $this->requestStack?->getCurrentRequest()?->getPathInfo();
     }
 
-    protected ?RequestStack $requestStack = null;
+    protected readonly ?RequestStack $requestStack;
 
     public function __construct(
         RequestStack $requestStack,
-        public UrlGeneratorInterface $urlGenerator,
-        private RouterInterface $router
+        public readonly UrlGeneratorInterface $urlGenerator,
+        private readonly RouterInterface $router
     ) {
         $this->requestStack = $requestStack;
     }
