@@ -11,7 +11,12 @@ use Wexample\SymfonyHelpers\Twig\AbstractExtension;
 
 class RouteExtension extends AbstractExtension
 {
-    protected ?string $currentPath = null;
+    // Read at each use and not kept from the construction: an extension lives
+    // as long as the worker serving it, the request it was built for does not.
+    protected ?string $currentPath {
+        get => $this->requestStack?->getCurrentRequest()?->getPathInfo();
+    }
+
     protected ?RequestStack $requestStack = null;
 
     public function __construct(
@@ -20,11 +25,6 @@ class RouteExtension extends AbstractExtension
         private RouterInterface $router
     ) {
         $this->requestStack = $requestStack;
-        $request = $requestStack->getCurrentRequest();
-
-        if ($request) {
-            $this->currentPath = $request->getPathInfo();
-        }
     }
 
     public function getFunctions(): array
