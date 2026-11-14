@@ -94,6 +94,26 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 continue;
             }
 
+            // What the class says of its routes is the same for each of its
+            // templates: read once, before them.
+            $classRouteAttributes = $reflectionClass->getAttributes(RouteAttribute::class);
+            $classRouteAttribute = $classRouteAttributes
+                ? $classRouteAttributes[0]->newInstance()
+                : null;
+
+            $classRouteNamePrefix = $classRouteAttribute
+                ? RouteHelper::getRouteAttributeName($classRouteAttribute)
+                : null;
+            $classRoutePathBase = $classRouteAttribute
+                ? RouteHelper::getRouteAttributePath($classRouteAttribute)
+                : null;
+
+            if (is_array($classRoutePathBase)) {
+                $classRoutePathBase = $classRoutePathBase ? $classRoutePathBase[0] : null;
+            }
+
+            $definedRoutePaths = $this->collectDefinedRoutePaths($reflectionClass, $classRouteAttribute);
+
             // Use Finder to scan template files
             $finder = new Finder();
             $finder
@@ -121,22 +141,6 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 );
                 $defaultRoutePath = RouteHelper::buildRoutePathFromParts($fullRouteParts, $filename);
 
-                $classRouteAttributes = $reflectionClass->getAttributes(RouteAttribute::class);
-                $classRouteAttribute = $classRouteAttributes
-                    ? $classRouteAttributes[0]->newInstance()
-                    : null;
-
-                $classRouteNamePrefix = $classRouteAttribute
-                    ? RouteHelper::getRouteAttributeName($classRouteAttribute)
-                    : null;
-                $classRoutePathBase = $classRouteAttribute
-                    ? RouteHelper::getRouteAttributePath($classRouteAttribute)
-                    : null;
-
-                if (is_array($classRoutePathBase)) {
-                    $classRoutePathBase = $classRoutePathBase ? $classRoutePathBase[0] : null;
-                }
-
                 $routeName = ($classRouteNamePrefix !== null && $classRouteNamePrefix !== '')
                     ? $classRouteNamePrefix . RouteHelper::buildRouteNameFromParts($relativeParts, $filename)
                     : $defaultRouteName;
@@ -145,7 +149,7 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                     : $defaultRoutePath;
 
                 // Skip auto-generation when an explicit Route attribute already defines this route.
-                if ($this->controllerDefinesRoute($reflectionClass, $fullPath)) {
+                if (isset($definedRoutePaths[RouteHelper::normalizeRoutePath($fullPath)])) {
                     continue;
                 }
 
@@ -162,23 +166,30 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
         return $collection;
     }
 
-    private function controllerDefinesRoute(\ReflectionClass $reflectionClass, string $fullPath): bool
-    {
-        $classRouteAttributes = $reflectionClass->getAttributes(RouteAttribute::class);
-        $classRoutePaths = $classRouteAttributes
-            ? (RouteHelper::getRouteAttributePath($classRouteAttributes[0]->newInstance()) ?? '')
+    /**
+     * The paths the controller's own #[Route] methods answer, normalised and
+     * used as keys: each template is then checked against them without
+     * reflecting the methods again.
+     *
+     * @return array<string, true>
+     */
+    private function collectDefinedRoutePaths(
+        \ReflectionClass $reflectionClass,
+        ?RouteAttribute $classRouteAttribute
+    ): array {
+        $classRoutePaths = $classRouteAttribute
+            ? (RouteHelper::getRouteAttributePath($classRouteAttribute) ?? '')
             : '';
 
-        if ($classRoutePaths === null) {
-            $classRoutePaths = [''];
-        } elseif (! is_array($classRoutePaths)) {
+        if (! is_array($classRoutePaths)) {
             $classRoutePaths = [$classRoutePaths];
         }
 
+        $paths = [];
+
         foreach ($reflectionClass->getMethods() as $method) {
             foreach ($method->getAttributes(RouteAttribute::class) as $attribute) {
-                $routeAttribute = $attribute->newInstance();
-                $methodPaths = RouteHelper::getRouteAttributePath($routeAttribute);
+                $methodPaths = RouteHelper::getRouteAttributePath($attribute->newInstance());
                 if ($methodPaths === null) {
                     $methodPaths = [''];
                 } elseif (! is_array($methodPaths)) {
@@ -186,16 +197,15 @@ class TemplateBasedRouteLoader extends AbstractRouteLoader
                 }
                 foreach ($methodPaths as $methodPath) {
                     foreach ($classRoutePaths as $classRoutePath) {
-                        $candidatePath = RouteHelper::combineRoutePaths($classRoutePath, $methodPath);
-                        if (RouteHelper::normalizeRoutePath($candidatePath) === RouteHelper::normalizeRoutePath($fullPath)) {
-                            return true;
-                        }
+                        $paths[RouteHelper::normalizeRoutePath(
+                            RouteHelper::combineRoutePaths($classRoutePath, $methodPath)
+                        )] = true;
                     }
                 }
             }
         }
 
-        return false;
+        return $paths;
     }
 
     protected function getName(): string
